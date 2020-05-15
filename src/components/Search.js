@@ -53,12 +53,18 @@ class Search extends Component {
     };
   }
 
+  handleInputChange = e => {
+    const query = e.target.value;
+    this.setState({ query, loading: true, message: "" });
+  };
+
   render() {
+    const { query } = this.state;
     return (
       <KontainerWrap>
         <Heading>Live Search React Application</Heading>
         <SearchLabel htmlFor="search-input">
-          <Input placeholder="Pencarian..." />
+          <Input placeholder="Pencarian..." onChange={this.handleInputChange} />
           <SearchIcon icon={faSearch} />
         </SearchLabel>
       </KontainerWrap>
