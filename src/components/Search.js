@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 
 const KontainerWrap = styled.div`
   margin: 36px auto;
@@ -51,11 +52,42 @@ class Search extends Component {
       loading: false,
       message: ""
     };
+    this.cancel = "";
   }
+
+  fetchSearchResult = (updatePageNo = "", query) => {
+    const pageNumber = updatePageNo ? `&page=${updatePageNo}` : "";
+    const searchUrl = `https://pixabay.com/api/?key=16522686-8c53ea1720bedeab3cfd42477&q=${query}${pageNumber}`;
+
+    // request data with axios
+    if (this.cancel) {
+      this.cancel.cancel();
+    }
+    this.cancel = axios.CancelToken.source();
+
+    axios
+      .get(searchUrl, {
+        cancelToken: this.cancel.token
+      })
+      .then(res => {
+        // const resultNotFoundMsg =
+        console.log(res);
+      })
+      .catch(error => {
+        if (axios.isCancel(error) || error) {
+          this.setState({
+            loading: false,
+            message: "Gagal ambil data"
+          });
+        }
+      });
+  };
 
   handleInputChange = e => {
     const query = e.target.value;
-    this.setState({ query, loading: true, message: "" });
+    this.setState({ query, loading: true, message: "" }, () => {
+      this.fetchSearchResult(1, query);
+    });
   };
 
   render() {
