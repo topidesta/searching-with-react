@@ -90,10 +90,19 @@ class Search extends Component {
       query: "",
       results: {},
       loading: false,
-      message: ""
+      message: "",
+      totalResults: 0,
+      totalPages: 0,
+      currentPageNo: 0
     };
     this.cancel = "";
   }
+
+  getPageCount = (total, denominator) => {
+    const divisible = 0 === total % denominator;
+    const valueToBeAdded = divisible ? 0 : 1;
+    return Math.floor(total / denominator) + valueToBeAdded;
+  };
 
   fetchSearchResult = (updatePageNo = "", query) => {
     const pageNumber = updatePageNo ? `&page=${updatePageNo}` : "";
@@ -110,13 +119,18 @@ class Search extends Component {
         cancelToken: this.cancel.token
       })
       .then(res => {
+        const total = res.data.total;
+        const totalPagesCount = this.getPageCount(total, 20);
         const resultNotFoundMsg = !res.data.hits.length
           ? "Tidak ada Data Tersedia"
           : "";
         this.setState({
           results: res.data.hits,
           message: resultNotFoundMsg,
-          loading: false
+          loading: false,
+          totalResults: total,
+          totalPages: totalPagesCount,
+          currentPageNo: updatePageNo
         });
       })
       .catch(error => {
