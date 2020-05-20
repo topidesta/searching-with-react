@@ -120,7 +120,6 @@ class Search extends Component {
       })
       .then(res => {
         const total = res.data.total;
-        console.log(total);
         const totalPagesCount = this.getPageCount(total, 20);
         const resultNotFoundMsg = !res.data.hits.length
           ? "Tidak ada Data Tersedia"
