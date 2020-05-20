@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import Muter from "./Muter";
 
 const KontainerWrap = styled.div`
   margin: 36px auto;
@@ -43,12 +44,51 @@ const SearchIcon = styled(FontAwesomeIcon)`
   right: 5px;
 `;
 
+const ResultContainer = styled.div`
+  display: flex;
+  flex-flow: wrap;
+`;
+
+const ResultItem = styled.a`
+  position: relative;
+  padding: 16px;
+  border: 1px solid #898989;
+  margin: 16px;
+  text-align: center;
+  min-width: 200px;
+  box-shadow: 2px 2px 2px #898989;
+`;
+
+const ImageUser = styled.h6`
+  color: #ff7f50;
+  font-size: 18px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 5px 10px;
+`;
+
+const ImageWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-self: center;
+  box-sizing: border-box;
+  height: 100%;
+`;
+
+const Image = styled.img`
+  width: 100%;
+  hegith: 200px;
+`;
+
 class Search extends Component {
   constructor(props) {
     super(props);
     this.state = {
       query: "",
-      result: {},
+      results: {},
       loading: false,
       message: ""
     };
@@ -70,8 +110,14 @@ class Search extends Component {
         cancelToken: this.cancel.token
       })
       .then(res => {
-        // const resultNotFoundMsg =
-        console.log(res);
+        const resultNotFoundMsg = !res.data.hits.length
+          ? "Tidak ada Data Tersedia"
+          : "";
+        this.setState({
+          results: res.data.hits,
+          message: resultNotFoundMsg,
+          loading: false
+        });
       })
       .catch(error => {
         if (axios.isCancel(error) || error) {
@@ -85,20 +131,62 @@ class Search extends Component {
 
   handleInputChange = e => {
     const query = e.target.value;
-    this.setState({ query, loading: true, message: "" }, () => {
-      this.fetchSearchResult(1, query);
-    });
+    if (!query) {
+      this.setState({
+        query,
+        results: {},
+        message: ""
+      });
+    } else {
+      this.setState({ query, loading: true, message: "" }, () => {
+        this.fetchSearchResult(1, query);
+      });
+    }
+  };
+
+  renderResult = () => {
+    const { results } = this.state;
+
+    if (Object.keys(results).length && results.length) {
+      return (
+        <ResultContainer>
+          {results.map(result => {
+            return (
+              <ResultItem key={result.id} href={result.previewURL}>
+                <ImageUser>{result.user}</ImageUser>
+                <ImageWrapper>
+                  <Image
+                    src={result.previewURL}
+                    alt={`${result.username} image`}
+                  />
+                </ImageWrapper>
+              </ResultItem>
+            );
+          })}
+        </ResultContainer>
+      );
+    }
   };
 
   render() {
-    const { query } = this.state;
+    const { query, loading, message } = this.state;
     return (
       <KontainerWrap>
         <Heading>Live Search React Application</Heading>
         <SearchLabel htmlFor="search-input">
-          <Input placeholder="Pencarian..." onChange={this.handleInputChange} />
+          <Input
+            value={query}
+            placeholder="Pencarian..."
+            onChange={this.handleInputChange}
+          />
           <SearchIcon icon={faSearch} />
         </SearchLabel>
+        {message && <p className="message">{message}</p>}
+
+        {loading ? <Muter /> : ""}
+
+        {/* RESULT */}
+        {this.renderResult()}
       </KontainerWrap>
     );
   }
