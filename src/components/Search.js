@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import Muter from "./Muter";
+import PageNavigation from "./PageNavigation";
 
 const KontainerWrap = styled.div`
   margin: 36px auto;
@@ -96,8 +97,11 @@ class Search extends Component {
       currentPageNo: 0
     };
     this.cancel = "";
+
+    this.handlePageClick = this.handlePageClick.bind(this);
   }
 
+  // menghitung halaman
   getPageCount = (total, denominator) => {
     const divisible = 0 === total % denominator;
     const valueToBeAdded = divisible ? 0 : 1;
@@ -158,6 +162,20 @@ class Search extends Component {
     }
   };
 
+  handlePageClick = type => {
+    event.preventDefault();
+    const updatePageNo =
+      "prev" === type
+        ? this.state.currentPageNo - 1
+        : this.state.currentPageNo + 1;
+
+    if (!this.state.loading) {
+      this.setState({ loading: true, message: "" }, () => {
+        this.fetchSearchResult(updatePageNo, this.state.query);
+      });
+    }
+  };
+
   renderResult = () => {
     const { results } = this.state;
 
@@ -183,7 +201,11 @@ class Search extends Component {
   };
 
   render() {
-    const { query, loading, message } = this.state;
+    const { query, loading, message, currentPageNo, totalPages } = this.state;
+
+    const showPrevLink = 1 < currentPageNo;
+    const showNextLink = totalPages > currentPageNo;
+
     return (
       <KontainerWrap>
         <Heading>Live Search React Application</Heading>
@@ -198,7 +220,13 @@ class Search extends Component {
         {message && <p className="message">{message}</p>}
 
         {loading ? <Muter /> : ""}
-
+        <PageNavigation
+          loading={loading}
+          showPrevLink={showPrevLink}
+          showNextLink={showNextLink}
+          handlePrevClick={() => this.handlePageClick("prev", event)}
+          handleNextClick={() => this.handlePageClick("next", event)}
+        />
         {/* RESULT */}
         {this.renderResult()}
       </KontainerWrap>
