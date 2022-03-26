@@ -20,7 +20,7 @@
     "acorn": "6.4.1",
     "axios": "^0.19.2",
     "kind-of": "6.0.3",
-    "minimist": "1.2.3",
+    "minimist": "1.2.6",
     "parcel-bundler": "^1.12.4",
     "react": "^16.6.0",
     "react-dom": "^16.12.0",
